@@ -1,0 +1,26 @@
+#!/bin/bash
+# Scaling, part 2: one 104-core node; one top-down DAG (default topdown2:4:5: two-stage
+# splitting, 16 x 32 = 512 subtrees; SCALE_FAMILY=topdown:9 repeats the first run) on
+# 9, 17, 33, 65 and 104 ranks, for N=8192 and 16384.  3 repeats; only the first is logged
+# (telemetry), so the other two time Dagster without logging cost.  ~35 min of runs.
+# Instances must exist (scale_seq.pbs makes them); the one-worker reference may run alongside.
+#PBS -P YOUR_PROJECT
+#PBS -q YOUR_QUEUE
+#PBS -l ncpus=104,mem=400GB,walltime=01:15:00
+#PBS -l wd
+# (add any site-specific resource requests here, e.g. file-system access)
+#PBS -N xsa-scale
+set -euo pipefail
+cd "${PBS_O_WORKDIR:-.}"; source hpc/env.sh
+OUT="$XSA_DATA/results/scale_${PBS_JOBID:-local}"
+for N in ${SCALE_NS:-8192 16384}; do
+  I="$XSA_DATA/inst/n$N"
+  echo "== N=$N $(date +%T)"
+  python3 xsa/run_families.py --e3 --e3-extra "$MASTER_ARGS" --telemetry --telemetry-reps 1 \
+    ${DRIVER_EXTRA:-} --dagster "$DAGSTER_BIN" --meta "$I/xsa_n$N.meta.json" --cnf "$I/xsa_n$N.cnf" \
+    --tag "n$N" --timeout "${TIMEOUT:-1200}" --repeats "${REPEATS:-3}" --out "$OUT" \
+    --plan "${SCALE_FAMILY:-topdown2:4:5}@${SCALE_RANKS:-9,17,33,65,104}"
+done
+python3 xsa/showcase_report.py "$OUT" $XSA_DATA/results/scale_seq_* \
+  --md "$OUT/report.md" --plot "$OUT/scaling.png" || true
+echo "done $(date +%T)"

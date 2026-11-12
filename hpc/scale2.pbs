@@ -1,0 +1,23 @@
+#!/bin/bash
+# Scaling, optional part 3: two 104-core nodes, the same DAG on 208 ranks (104 per node).
+# Expect the curve to flatten here: start-up (~0.15 s per rank on the busiest node) and the
+# master's job allocation (cost grows with workers^2 x pending jobs) both rise.  ~10 min.
+#   qsub hpc/scale2.pbs        (instances must exist; SCALE_FAMILY as in scale.pbs)
+#PBS -P YOUR_PROJECT
+#PBS -q YOUR_QUEUE
+#PBS -l ncpus=208,mem=800GB,walltime=00:40:00
+#PBS -l wd
+# (add any site-specific resource requests here, e.g. file-system access)
+#PBS -N xsa-scale2
+set -euo pipefail
+cd "${PBS_O_WORKDIR:-.}"; source hpc/env.sh
+OUT="$XSA_DATA/results/scale2_${PBS_JOBID:-local}"
+for N in ${SCALE_NS:-8192 16384}; do
+  I="$XSA_DATA/inst/n$N"
+  python3 xsa/run_families.py --e3 --e3-extra "$MASTER_ARGS" --telemetry --telemetry-reps 1 \
+    ${DRIVER_EXTRA:-} --dagster "$DAGSTER_BIN" --meta "$I/xsa_n$N.meta.json" --cnf "$I/xsa_n$N.cnf" \
+    --tag "n$N" --timeout "${TIMEOUT:-1200}" --repeats "${REPEATS:-2}" --out "$OUT" \
+    --plan "${SCALE_FAMILY:-topdown2:4:5}@${SCALE2_RANKS:-208}"
+done
+python3 xsa/showcase_report.py "$OUT" $XSA_DATA/results/scale_* --md "$OUT/report.md" \
+  --plot "$OUT/scaling.png" || true

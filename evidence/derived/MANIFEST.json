@@ -1,0 +1,39 @@
+{
+ "generated_by": "scripts/derive.py",
+ "result_dirs": [
+  "node_181061721",
+  "scale2_181064189",
+  "scale2_181115775",
+  "scale_181064188",
+  "scale_181115774",
+  "scale_seq_181063449",
+  "scale_seq_181115773",
+  "seq_181049118",
+  "seq_181060605",
+  "smoke_181048154",
+  "smoke_181060407",
+  "wide_181049119",
+  "wide_181060606"
+ ],
+ "runs": 206,
+ "status_counts": {
+  "SAT": 203,
+  "TIMEOUT": 3
+ },
+ "dagster_args": [
+  "-m 4 -e 3 -b 0  [inferred: driver --e3, master -g left at its default 0]",
+  "-m 4 -e 3 -b 0 -g 2  [recorded]"
+ ],
+ "binary_build_dirs": [
+  "dagster-afsat"
+ ],
+ "logged_runs_analysed": 125,
+ "files": [
+  "runs.csv",
+  "inventory.csv",
+  "scaling.csv",
+  "phase_breakdown.csv",
+  "latency.csv",
+  "master_load.csv"
+ ]
+}

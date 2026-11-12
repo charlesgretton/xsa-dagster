@@ -1,0 +1,22 @@
+#!/bin/bash
+# One worker per subtree: 2^d subtrees + 1 master rank (d=3,5,7,8 -> 9, 33, 129, 257 ranks),
+# 3 repeats each.  3 104-core nodes (312 cores) cover 257 ranks; ~10 min of runs.
+#   qsub hpc/wide.pbs
+#PBS -P YOUR_PROJECT
+#PBS -q YOUR_QUEUE
+#PBS -l ncpus=312,mem=600GB,walltime=00:40:00
+#PBS -l wd
+# (add any site-specific resource requests here, e.g. file-system access)
+#PBS -N xsa-wide
+set -euo pipefail
+cd "${PBS_O_WORKDIR:-.}"; source hpc/env.sh
+OUT="$XSA_DATA/results/wide_${PBS_JOBID:-local}"
+for N in ${NS:-2048 4096}; do
+  I="$XSA_DATA/inst/n$N"
+  if [ "$N" = 2048 ]; then PLAN="${WIDE_PLAN_2048:-split:8@3;topdown:3@9;topdown:5@33;topdown:7@129;topdown:8@257}"
+  else PLAN="${WIDE_PLAN:-topdown:5@33;topdown:7@129;topdown:8@257}"; fi
+  python3 xsa/run_families.py --e3 --e3-extra "$MASTER_ARGS" --telemetry ${DRIVER_EXTRA:-} --dagster "$DAGSTER_BIN" \
+    --meta "$I/xsa_n$N.meta.json" --cnf "$I/xsa_n$N.cnf" --tag "n$N" --timeout "${TIMEOUT:-300}" --out "$OUT" \
+    --repeats "${REPEATS:-3}" --plan "$PLAN"
+done
+python3 xsa/showcase_report.py "$OUT" $XSA_DATA/results/seq_* --md "$OUT/report.md" || true

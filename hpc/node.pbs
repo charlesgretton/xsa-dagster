@@ -1,0 +1,37 @@
+#!/bin/bash
+# One 104-core node (104 cores), unpatched Dagster, three questions from the wide run:
+#  1. start-up: the one-node DAG on the bundled N=32 instance solves in milliseconds, so its
+#     time at 2..104 ranks is almost pure start-up (MPI launch + every rank loading the CNF);
+#     compare with the 18 s seen at 129 ranks across two nodes
+#  2. more subtrees than workers: depth 7/8 on 33 and 65 ranks keeps start-up and the master's
+#     allocation cost small while making the subtrees (and their stragglers) small
+#  3. transport: your OMPI_MCA_btl=self,tcp sends same-node messages over TCP; self,vader,tcp
+#     uses shared memory within the node
+# ~15 min of runs on one node.  Submit from the repository root:  qsub hpc/node.pbs
+#PBS -P YOUR_PROJECT
+#PBS -q YOUR_QUEUE
+#PBS -l ncpus=104,mem=256GB,walltime=00:40:00
+#PBS -l wd
+# (add any site-specific resource requests here, e.g. file-system access)
+#PBS -N xsa-node
+set -euo pipefail
+cd "${PBS_O_WORKDIR:-.}"; source hpc/env.sh
+OUT="$XSA_DATA/results/node_${PBS_JOBID:-local}"
+E=xsa/examples
+drive() {   # drive TRANSPORT TAG META CNF TIMEOUT PLAN
+  local bt=$1 tag=$2 meta=$3 cnf=$4 to=$5 plan=$6
+  OMPI_MCA_btl="$bt" python3 xsa/run_families.py --e3 --e3-extra "$MASTER_ARGS" --telemetry \
+    ${DRIVER_EXTRA:-} --dagster "$DAGSTER_BIN" --variant "btl=$bt" --tag "${tag}_${bt//,/_}" \
+    --meta "$meta" --cnf "$cnf" --timeout "$to" --repeats "${REPEATS:-2}" --plan "$plan" --out "$OUT"
+}
+for BT in ${TRANSPORTS:-self,tcp self,vader,tcp}; do
+  echo "== transport $BT: start-up calibration $(date +%T)"
+  drive "$BT" n32 "$E/xsa_n32.meta.json" "$E/xsa_n32.cnf" 120 "one@${CAL_RANKS:-2,9,33,65,104}"
+  for N in ${NS:-2048 4096}; do
+    I="$XSA_DATA/inst/n$N"
+    echo "== transport $BT: N=$N $(date +%T)"
+    drive "$BT" "n$N" "$I/xsa_n$N.meta.json" "$I/xsa_n$N.cnf" "${TIMEOUT:-300}" \
+      "${NODE_PLAN:-topdown:5@33;topdown:7@33,65;topdown:8@33,65,104}"
+  done
+done
+python3 xsa/showcase_report.py "$OUT" $XSA_DATA/results/seq_* --assume-timeout 3600 --md "$OUT/report.md" || true

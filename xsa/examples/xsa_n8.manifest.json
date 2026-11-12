@@ -1,0 +1,10 @@
+{
+  "cnf": "xsa_n8.cnf",
+  "metadata": "xsa_n8.meta.json",
+  "planted_model": "xsa_n8.planted.model",
+  "sha256": {
+    "xsa_n8.cnf": "bd45023eeee582d38d1c76b282d8b333ef511829bff13e322651342859401217",
+    "xsa_n8.meta.json": "a4c3e929483eb96e145a478c4cf7699b711d9354f769f852c7b1ffc68ca42e06",
+    "xsa_n8.planted.model": "d7ed59bbf1714241279adc3325f235add9b14473f32054992d6678b628ea8834"
+  }
+}

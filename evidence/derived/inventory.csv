@@ -1,0 +1,14 @@
+result_dir,experiment,N,dags,ranks,repeats,runs,successful_verified,timeouts,launch_failures,invalid_models
+node_181061721,node,32 2048 4096,one topdown:5 topdown:7 topdown:8,2 9 33 65 104,2,68,68,0,0,0
+scale2_181064189,scale2,8192 16384,topdown:9,208,2,4,4,0,0,0
+scale2_181115775,scale2,8192 16384,topdown2:4:5,208,2,4,4,0,0,0
+scale_181064188,scale,8192 16384,topdown:9,9 17 33 65 104,3,30,30,0,0,0
+scale_181115774,scale,8192 16384,topdown2:4:5,9 17 33 65 104,3,30,30,0,0,0
+scale_seq_181063449,scale_seq,8192 16384,topdown:9,2,1,2,2,0,0,0
+scale_seq_181115773,scale_seq,8192 16384,topdown2:4:5,2,1,2,2,0,0,0
+seq_181049118,seq,2048 4096,one split:8 topdown:3 topdown:5 topdown:7 topdown:8,2,1,12,11,1,0,0
+seq_181060605,seq,2048 4096,split:8 topdown:3 topdown:5 topdown:7 topdown:8,2,1,10,10,0,0,0
+smoke_181048154,smoke,32,one split:8 topdown:1 topdown:2,2 3 5,1,6,6,0,0,0
+smoke_181060407,smoke,32,one split:8 topdown:1 topdown:2,2 3 5,1,6,6,0,0,0
+wide_181049119,wide,2048,split:8 topdown:3 topdown:5 topdown:7 topdown:8,3 9 33 129 257,2,8,6,2,0,0
+wide_181060606,wide,2048 4096,split:8 topdown:3 topdown:5 topdown:7 topdown:8,3 9 33 129 257,3,24,24,0,0,0

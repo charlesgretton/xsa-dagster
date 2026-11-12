@@ -1,0 +1,10 @@
+OK   n2048.split8.dag: 2 nodes, 1 edges, sink 1
+OK   n2048.topdown3.dag: 10 nodes, 16 edges, sink 9
+OK   n2048.topdown5.dag: 34 nodes, 64 edges, sink 33
+OK   n2048.topdown7.dag: 130 nodes, 256 edges, sink 129
+OK   n2048.topdown8.dag: 258 nodes, 512 edges, sink 257
+OK   n4096.split8.dag: 2 nodes, 1 edges, sink 1
+OK   n4096.topdown3.dag: 10 nodes, 16 edges, sink 9
+OK   n4096.topdown5.dag: 34 nodes, 64 edges, sink 33
+OK   n4096.topdown7.dag: 130 nodes, 256 edges, sink 129
+OK   n4096.topdown8.dag: 258 nodes, 512 edges, sink 257

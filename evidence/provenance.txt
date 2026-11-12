@@ -1,0 +1,17 @@
+# Environment of the reported campaign.  Captured on a compute node of the cluster after the
+# campaign, from the Dagster build directory and instance files used by all 206 runs.
+
+Dagster        AFSAT-Integration branch, commit 1c8995131b009410226aa1207d2c622672368293
+               (2026-08-13), built unmodified; binary SHA-256 in checksums.txt
+Compiler       g++ (GCC) 8.5.0 20210514 (Red Hat 8.5.0-28), via the Open MPI 4.1.0 mpicxx wrapper
+               (as reported by the current module; build flags: Dagster's Makefile defaults)
+Libraries      glog (shared and static) and CUDD (static), installed under a private prefix;
+               versions not identified
+MPI            Open MPI 4.1.0; OMPI_MCA_btl=self,tcp; mpirun --map-by core --bind-to core
+Python         3.11.0 (harness and analysis use the standard library only)
+OS             Rocky Linux 8.10
+Nodes          104 cores per node (Intel Xeon Platinum 8470Q), 2 hardware threads per core,
+               8 NUMA nodes, 512 GB; batch system PBS
+Not recorded   compiler flags beyond the Makefile defaults, library versions, resource limits,
+               NUMA balancing policy, page-cache state
+Service units  recorded for 12 of 13 batch jobs; see proceedings, "Run inventory, correctness and cost"

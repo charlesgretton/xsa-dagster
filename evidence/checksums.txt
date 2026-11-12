@@ -1,0 +1,31 @@
+# SHA-256 checksums cited in the proceedings (proceedings/, appendix "Evidence and checksums")
+
+## Raw results of the campaign (NOT distributed with this repository)
+## 13 batch-job result directories, 206 runs, held by the corresponding author.
+## Inside it, directory names carry a scheduler host suffix (<name>_<jobid>.<host>-pbs);
+## the derived tables here use the normalised names (<name>_<jobid>).
+81e731d26e9df81271c2c2e3dbdee6729a99c7742563d9e4905e50d27678888a  results.tar.gz  (540,219,008 bytes)
+
+## Generator (identical to xsa/generator/xor_session_attack_gen.py in this repository)
+da4315e564e03faf85310ca548c953393fdc6dd30d32e619cec63c3ab6e5b82c  xor_session_attack_gen.py
+
+## Instances: regenerate with  python3 xsa/generator/xor_session_attack_gen.py generate N --out DIR
+## and compare against these; each instance's manifest.json carries the same hashes.
+1ff67520d958f7d66e3d1682701d932653b3050e5ed88537936682557170977c  xsa_n2048.cnf            (target 0x2a0f8)
+b78a6c551f8e952ae29b701603c52d570a96d1a16cd3e0853e68ede420424f96  xsa_n2048.meta.json
+0d47aad9ccf4ab923282127c63c762201e4121ff13901e0c74321cac0af31ec7  xsa_n2048.planted.model
+157d63592968edde2d6440d755af1cb7f4e68f6629b7843545fb36a6a74ee240  xsa_n4096.cnf            (target 0x5c20c)
+93dfbe571d79dec8305068e0eb219178e30d1bb846e860555b7b293d2f991ba2  xsa_n4096.meta.json
+c486e5c19c96a86de405575573dbc34381a94becadc3f1dba636b3607228a6e8  xsa_n4096.planted.model
+33f6a96f8726963fde184b771d8943ba65d024ebdae40d6d1eb13e813c741173  xsa_n8192.cnf            (target 0x1bb3dd)
+8634abe5be8d37a3fb6bb0a24fee583c58a62a72b0ec4a508c54222a47850f1a  xsa_n8192.meta.json
+166b53d6221eb95389830037eb63d910b2969e30f465c4cb079df8f4f2ef14b2  xsa_n8192.planted.model
+c0ab0301f2d7121ad10cbb449aa69a57ffee4e07c8ada68d9d99276bfd7162bb  xsa_n16384.cnf           (target 0x866ac)
+58e390074d6b3eda0103ceb735132a1d11c4faba8cd3ce01579dcf1cde9dfc0a  xsa_n16384.meta.json
+bc520917aecae40cc2edb20d13df5310beaba2210235912cd2511360410383e4  xsa_n16384.planted.model
+
+## Dagster binary used by all 206 runs (captured after the campaign from its build directory)
+b861c5d01e0d668fcf6025a07c0e01ff9e98f7e64c0ae682afa286aa8a8f49c6  dagster  (AFSAT-Integration, commit 1c8995131b009410226aa1207d2c622672368293)
+## A rebuild matches this hash only with an identical toolchain (see provenance.txt).
+
+## Executed DAG files: validation/executed_dag_sha256.txt (69 files, paths as in the raw results)

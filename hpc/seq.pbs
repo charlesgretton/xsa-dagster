@@ -1,0 +1,23 @@
+#!/bin/bash
+# One-worker runs (2 ranks): the one-node baseline, and every showcase DAG run sequentially.
+# SEQ_ONE=0 skips the one-node baselines (they do not depend on -g; reuse earlier results):
+#   qsub -v SEQ_ONE=0 hpc/seq.pbs
+# They give the baseline AND the phase timings from which the report predicts each wide run.
+# Cheap (4 cores).  N=4096's one-node baseline is unknown (>300 s in the sandbox), hence
+# TIMEOUT=3600 per run and 4 h walltime.  qsub hpc/seq.pbs   (qsub -v NS=2048 for a quick pass)
+#PBS -P YOUR_PROJECT
+#PBS -q YOUR_QUEUE
+#PBS -l ncpus=4,mem=24GB,walltime=04:00:00
+#PBS -l wd
+# (add any site-specific resource requests here, e.g. file-system access)
+#PBS -N xsa-seq
+set -euo pipefail
+cd "${PBS_O_WORKDIR:-.}"; source hpc/env.sh
+OUT="$XSA_DATA/results/seq_${PBS_JOBID:-local}"
+for N in ${NS:-2048 4096}; do
+  I="$XSA_DATA/inst/n$N"
+  python3 xsa/run_families.py --e3 --e3-extra "$MASTER_ARGS" --telemetry ${DRIVER_EXTRA:-} --dagster "$DAGSTER_BIN" \
+    --meta "$I/xsa_n$N.meta.json" --cnf "$I/xsa_n$N.cnf" --tag "n$N" --timeout "${TIMEOUT:-3600}" --out "$OUT" \
+    --plan "${SEQ_PLAN:-$( [ "${SEQ_ONE:-1}" = 1 ] && echo "one@2;" || true )split:8@2;topdown:3@2;topdown:5@2;topdown:7@2;topdown:8@2}"
+done
+python3 xsa/showcase_report.py "$OUT" --md "$OUT/report.md"

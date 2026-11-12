@@ -1,0 +1,22 @@
+#!/bin/bash
+# 10-minute smoke test on one node: the bundled N=32 instance, every showcase DAG shape.
+# Expect "SMOKE OK" at the end of the .o file.   Submit from the repository root: qsub hpc/smoke.pbs
+#PBS -P YOUR_PROJECT
+#PBS -q YOUR_QUEUE
+#PBS -l ncpus=8,mem=16GB,walltime=00:10:00
+#PBS -l wd
+# (add any site-specific resource requests here, e.g. file-system access)
+#PBS -N xsa-smoke
+set -euo pipefail
+cd "${PBS_O_WORKDIR:-.}"; source hpc/env.sh
+OUT="$XSA_DATA/results/smoke_${PBS_JOBID:-local}"
+E=xsa/examples
+python3 xsa/run_families.py --e3 --e3-extra "$MASTER_ARGS" --telemetry ${DRIVER_EXTRA:-} --dagster "$DAGSTER_BIN" \
+  --meta $E/xsa_n32.meta.json --cnf $E/xsa_n32.cnf --tag n32 --timeout 120 --out "$OUT" \
+  --plan "one@2;split:8@2;topdown:1@2,3;topdown:2@2,5"
+python3 xsa/showcase_report.py "$OUT" --md "$OUT/report.md" > /dev/null
+if python3 -c "import json,sys; rs=[json.loads(l) for l in open('$OUT/families.jsonl')]; sys.exit(0 if rs and all(r['status']=='SAT' for r in rs) else 1)"; then
+  echo "SMOKE OK: every run returned a verified attack ($OUT/report.md)"
+else
+  echo "SMOKE FAILED: see $OUT/families.jsonl and $OUT/runs/*/*/dagster.log"; exit 1
+fi

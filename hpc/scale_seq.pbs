@@ -1,0 +1,41 @@
+#!/bin/bash
+# Scaling, part 1 (cheap, 8 cores): generate the large XSA instances (the metadata step needs
+# more memory than a login node allows: N=8192 exceeded 4 GB in testing), then run the scaling
+# DAG on ONE worker (2 ranks) -- the reference for every speedup in part 2.
+# SCALE_FAMILY (default topdown2:4:5, two-stage splitting; topdown:9 = the first scaling run).
+# Instances that already exist are reused, so this need not run before scale.pbs:
+#   qsub hpc/scale_seq.pbs; qsub hpc/scale.pbs; qsub hpc/scale2.pbs
+#PBS -P YOUR_PROJECT
+#PBS -q YOUR_QUEUE
+#PBS -l ncpus=8,mem=64GB,walltime=02:00:00
+#PBS -l wd
+# (add any site-specific resource requests here, e.g. file-system access)
+#PBS -N xsa-scale-seq
+set -euo pipefail
+cd "${PBS_O_WORKDIR:-.}"; source hpc/env.sh; export ROOT=$(pwd)
+OUT="$XSA_DATA/results/scale_seq_${PBS_JOBID:-local}"
+FAM=${SCALE_FAMILY:-topdown2:4:5}
+for N in ${SCALE_NS:-8192 16384}; do
+  I="$XSA_DATA/inst/n$N"
+  if [ ! -f "$I/xsa_n$N.manifest.json" ]; then
+    echo "generating XSA N=$N  $(date +%T)"
+    python3 xsa/generator/xor_session_attack_gen.py generate "$N" --out "$I" > /dev/null
+  fi
+  echo "N=$N: $(grep '^p cnf' "$I/xsa_n$N.cnf")  $(date +%T)"
+  python3 - "$I/xsa_n$N.meta.json" "$FAM" << 'PY'
+import os, sys
+sys.path.insert(0, os.path.join(os.environ["ROOT"], "xsa"))
+import xsa_dagster as xd
+from showcase_report import family_layout
+depth = family_layout(sys.argv[2])["depth"]
+x = xd.XSA(sys.argv[1]); p = x.predict_topdown(depth)
+print("%s (total depth %d): %d subtrees of %s episodes, P(every subtree reaches its sub-target) = %.4f"
+      % (sys.argv[2], depth, p["children"], p["episodes_per_child"], p["p_every_child_reaches_its_subtarget"]))
+sys.exit(0 if p["p_every_child_reaches_its_subtarget"] > 0.999 else 1)
+PY
+  python3 xsa/run_families.py --e3 --e3-extra "$MASTER_ARGS" --telemetry ${DRIVER_EXTRA:-} \
+    --dagster "$DAGSTER_BIN" --meta "$I/xsa_n$N.meta.json" --cnf "$I/xsa_n$N.cnf" --tag "n$N" \
+    --timeout "${TIMEOUT:-3600}" --out "$OUT" --plan "$FAM@2"
+done
+python3 xsa/showcase_report.py "$OUT" --md "$OUT/report.md" > /dev/null || true
+echo "done $(date +%T)"
